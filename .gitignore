@@ -1,0 +1,9 @@
+venv/
+
+.vscode/
+
+audio_visualizer.dSYM/
+
+.env
+
+audio_visualizer
