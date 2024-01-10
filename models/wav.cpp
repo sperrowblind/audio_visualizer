@@ -2,6 +2,8 @@
 #include <fstream>
 #include <vector>
 #include <iostream>
+#include <cmath>
+#include <random>
 #include "wav_fmt.cpp"
 
 using namespace std;
@@ -9,6 +11,11 @@ using namespace std;
 
 class wavFile {
     public:
+
+        wavFile() {
+            song_size = 0;
+            song_name = "default";
+        }
 
         wavFile(vector<char> header_in, vector<char> audio_in, uint32_t song_size_in, string song_name_in) {
             header = header_in;
@@ -152,6 +159,14 @@ class wavFile {
                 return false;
             }
 
+            memcpy(&fmt_chunk, fmt_data.data(), sizeof(fmt_chunk));
+            printf("Audio Format: %d\n", fmt_chunk.audioFormat);
+            printf("Number of Channels: %d\n", fmt_chunk.numChannels);
+            printf("Sample Rate: %d\n", fmt_chunk.sampleRate);
+            printf("Byte Rate: %d\n", fmt_chunk.byteRate);
+            printf("Block Align: %d\n", fmt_chunk.blockAlign);
+            printf("Bits per Sample: %d\n", fmt_chunk.bitsPerSample);
+
             return true;
         }
 
@@ -162,14 +177,104 @@ class wavFile {
             }
         }
 
+        void trim_file(double seconds_to_trim, bool is_leading) {
+            int samples_to_trim = seconds_to_trim * fmt_chunk.sampleRate;
+            if (is_leading) {
+                if (samples_to_trim > 0 && samples_to_trim <= audio_data.size()) {
+                    audio_data.erase(audio_data.begin() + 8, audio_data.begin() + 8 + samples_to_trim * fmt_chunk.bitsPerSample);
+                }
+            }
+            else {
+                if (samples_to_trim > 0 && samples_to_trim <= audio_data.size()) {
+                    audio_data.erase(audio_data.end() - samples_to_trim * fmt_chunk.bitsPerSample, audio_data.end());
+                }
+            }
+            updateFileSize(samples_to_trim);
+            // need to update header size here
+        }
+
+        void apply_dither() {
+            std::default_random_engine generator;
+            std::uniform_int_distribution<int> distribution(-1, 1);
+
+            for (size_t i = 8; i < audio_data.size(); ++i) {
+                int dither_value = distribution(generator);
+                audio_data[i] += static_cast<char>(dither_value);
+            }
+        }
+
+        void normalize_volume(double target_peak) {
+            short max_amplitude = 0;
+            int bytesPerSample = (fmt_chunk.numChannels * fmt_chunk.bitsPerSample) / 8;
+            for (size_t i = 8; i < audio_data.size(); i += bytesPerSample) {
+                short sample = static_cast<short>((audio_data[i + 1] << 8) | (audio_data[i] & 0xFF));
+                if (abs(sample) > max_amplitude) {
+                    max_amplitude = abs(sample);
+                }
+            }
+
+            double normalization_factor = (target_peak / max_amplitude);
+
+            for (size_t i = 8; i < audio_data.size(); i += bytesPerSample) {
+                short sample = static_cast<short>((audio_data[i + 1] << 8) | (audio_data[i] & 0xFF));
+                sample = static_cast<short>(sample * normalization_factor);
+
+                if (sample > 32767) {
+                    sample = 32767;
+                } else if (sample < -32768) {
+                    sample = -32768;
+                }
+
+                audio_data[i] = static_cast<char>(sample & 0xFF);
+                audio_data[i + 1] = static_cast<char>((sample >> 8) & 0xFF);
+            }
+        }
+
+
+        void make_8bit() {
+            if (fmt_chunk.byteRate == 8) {
+                std::cerr << "It appears the file is already 8-bit" << '\n';
+                std::cout << "It appears the file is already 8-bit" << '\n';
+                return;
+            }
+            apply_dither();
+            int bytesPerSample = (fmt_chunk.numChannels * fmt_chunk.bitsPerSample) / 8;
+            int totalSamples = (audio_data.size() - 8) / bytesPerSample;
+            printf("bytes per sample: %d\n", bytesPerSample);
+            for (size_t i = 8; i < audio_data.size(); i += bytesPerSample) {
+                short sample = static_cast<short>((audio_data[i + 1] << 8) | (audio_data[i] & 0xFF));
+
+                char scaledSample = static_cast<char>((sample / 32768.0) * 127.0) + 128;
+
+                audio_data[i / (fmt_chunk.bitsPerSample / 8)] = scaledSample;
+            }
+            fmt_chunk.bitsPerSample = 8;
+            fmt_chunk.blockAlign = fmt_chunk.numChannels * fmt_chunk.bitsPerSample / 8;
+            fmt_data[22] = 8;
+            fmt_data[20] = fmt_chunk.blockAlign;
+
+            int audio_size = totalSamples * fmt_chunk.numChannels * fmt_chunk.bitsPerSample / 8;
+            printf("what the size should be: %d\n", audio_size);
+
+            audio_data.resize(audio_size + 8);
+
+            updateFileSize(audio_size);
+
+            //normalize_volume(50);
+        }
+
+
         void output_song() {
             string output_song_name = "new_" + song_name + ".wav";
             ofstream song_out(output_song_name, ios::binary);
 
             if (song_out.is_open()) {
                 song_out.write(header.data(), header.size());
+                printf("Header size: %d\n", header.size());
                 song_out.write(fmt_data.data(), fmt_data.size());
+                printf("Fmt size: %d\n", fmt_data.size());
                 song_out.write(audio_data.data(), audio_data.size());
+                printf("Audio_data size: %d\n", audio_data.size());
                 song_out.close();
             } else {
                 cerr << "Failed to write file";
