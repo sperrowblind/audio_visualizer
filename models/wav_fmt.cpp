@@ -1,4 +1,3 @@
-#include <fstream>
 
 struct fmtChunk {
     char chunkID[4];
