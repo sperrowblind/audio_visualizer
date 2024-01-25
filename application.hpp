@@ -1,9 +1,9 @@
-#include "models/wav.cpp"
+#include "models/wav.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 
-#ifndef MYCLASS_HPP
-#define MYCLASS_HPP
+#ifndef AUDIOAPPLICATION_HPP
+#define AUDIOAPPLICATION_HPP
 
 class audioApplication {
     public:
@@ -66,4 +66,4 @@ class audioApplication {
         void processLoadedEvents(sf::Event &event_in);
 };
 
-#endif // MYCLASS_HPP
+#endif // AUDIOAPPLICATION_HPP

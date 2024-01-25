@@ -1,24 +1,22 @@
-#include "../models/wav.cpp"
+#include "../models/wav.hpp"
 //#include "../models/flac.cpp"
-#include <iostream>
-#include <fstream>
 
 using namespace std;
 
-string get_song_name() {
-    string song_name = "HOME_wav.wav";
+string get_song_name(std::string song_in) {
+    std::string song_name = song_in;
     //string song_name = "sample-file-3.wav";
     //string song_name = "africa-toto.wav";
     //string song_name = "HOME_flac.flac";
-    cout << "Hello" << "      " << '\n';
-    cout << "Using song: " << song_name << '\n';
-    cout << '\n';
+    std::cout << "Hello" << "      " << '\n';
+    std::cout << "Using song: " << song_name << '\n';
+    std::cout << '\n';
     return song_name;
 }
 
-int test_wav_class() {
-    string song_name = get_song_name();
 
+wavFile load_file(std::string song_name_in) {
+    std::string song_name = get_song_name(song_name_in);
     ifstream song_in(song_name, ios::binary);
 
     song_name = song_name.substr(0, song_name.find("."));
@@ -26,71 +24,66 @@ int test_wav_class() {
     wavFile wav_song(song_in, song_name);
     song_in.close();
 
+    return wav_song;
+}
 
-    size_t currentSize = static_cast<uint8_t>(wav_song.get_header()[4]) |
-                         (static_cast<uint8_t>(wav_song.get_header()[5]) << 8) |
-                         (static_cast<uint8_t>(wav_song.get_header()[6]) << 16) |
-                         (static_cast<uint8_t>(wav_song.get_header()[7]) << 24);
+int test_trim_file(wavFile &wavFile_in, int second_to_trim_in, bool is_leading_in) {
+    int original_duration = wavFile_in.get_audio_file_duration();
+    std::cout << "Original duration of song: " << original_duration << '\n';
+    wavFile_in.trim_file(second_to_trim_in, is_leading_in);
+    if (wavFile_in.get_audio_file_duration() != original_duration - second_to_trim_in) {
+        std::cout << "Duration of song inconsistent after trim: " << wavFile_in.get_audio_file_duration() << '\n';
+        return 1;
+    }
+    return 0;
+}
 
-    size_t currentFmtSize = static_cast<uint8_t>(wav_song.get_fmt_data()[4]) |
-                         (static_cast<uint8_t>(wav_song.get_fmt_data()[5]) << 8) |
-                         (static_cast<uint8_t>(wav_song.get_fmt_data()[6]) << 16) |
-                         (static_cast<uint8_t>(wav_song.get_fmt_data()[7]) << 24);
+int test_wav_class() {
 
-    size_t currentDataSize = static_cast<uint8_t>(wav_song.get_audio_data()[4]) |
-                         (static_cast<uint8_t>(wav_song.get_audio_data()[5]) << 8) |
-                         (static_cast<uint8_t>(wav_song.get_audio_data()[6]) << 16) |
-                         (static_cast<uint8_t>(wav_song.get_audio_data()[7]) << 24);
+    // std::string first_audio = "HOME_wav.wav";
+    // std::string first_audio_name = first_audio.substr(0, first_audio.find("."));
 
-    cout << currentSize << " " << currentFmtSize << " " << currentDataSize << '\n';
+    // wavFile first_audio_file = load_file(first_audio);
 
-    // cout << "HEADER : ";
-    // for (char i : wav_song.get_header()) {
-    //     cout << i << " ";
-    // }
-    // cout << '\n';
+    // int testTrimSeconds[5] = {1, 10, 12, 20, 2};
 
-    // cout << "fmt : ";
-    // for (char i : wav_song.get_fmt_data()) {
-    //     cout << i << " ";
-    // }
-    // cout << '\n';
-
-    // cout << "data: ";
-    // int i = 0;
-    // for (char i : wav_song.get_audio_data()) {
-    //     cout << i << " ";
-    //     i++;
-    //     if (i == 20) {
-    //         break;
+    // for (auto i : testTrimSeconds) {
+    //     if (test_trim_file(first_audio_file, i, true) == 1) {
+    //         return 1;
     //     }
     // }
-    // cout << '\n';
 
-    if (wav_song.is_valid_wav()) {
-        cout << "Initial wav checks are correct" << '\n';
+    // std::cout << "Passed trimming file" << '\n';
+
+    std::string second_audio = "HOME_wav.wav";
+    std::string second_audio_name = second_audio.substr(0, second_audio.find("."));
+
+    wavFile second_audio_file = load_file(second_audio);
+
+    if (second_audio_file.is_valid_wav()) {
+        std::cout << "Initial wav checks are correct" << '\n';
     }
     else {
-        cout << "Not initially a valid wav file" << '\n';
+        std::cout << "Not initially a valid wav file" << '\n';
         return 1;
     }
 
-    //wav_song.reverse_audio();
-    wav_song.make_8bit();
+    //first_audio_file.reverse_audio();
+    second_audio_file.make_8bit();
     //wav_song.apply_dither();
     //wav_song.normalize_volume(50);
     //wav_song.trim_file(30, false);
 
-    if (wav_song.is_valid_wav()) {
-        cout << "Wav checks are still correct" << '\n';
-    }
-    else {
-        cout << "Not a valid wav file after reversal" << '\n';
-        return 1;
-    }
+    // if (first_audio_file.is_valid_wav()) {
+    //     std::cout << "Wav checks are still correct" << '\n';
+    // }
+    // else {
+    //     std::cout << "Not a valid wav file after reversal" << '\n';
+    //     return 1;
+    // }
 
-    wav_song.output_song();
-
+    //first_audio_file.output_song();
+    second_audio_file.output_song();
 
 
     return 0;
