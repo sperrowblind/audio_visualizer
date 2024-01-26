@@ -5,9 +5,6 @@ using namespace std;
 
 string get_song_name(std::string song_in) {
     std::string song_name = song_in;
-    //string song_name = "sample-file-3.wav";
-    //string song_name = "africa-toto.wav";
-    //string song_name = "HOME_flac.flac";
     std::cout << "Hello" << "      " << '\n';
     std::cout << "Using song: " << song_name << '\n';
     std::cout << '\n';
@@ -53,9 +50,9 @@ int test_wav_class() {
     //     }
     // }
 
-    // std::cout << "Passed trimming file" << '\n';
+    std::cout << "Passed trimming file" << '\n';
 
-    std::string second_audio = "HOME_wav.wav";
+    std::string second_audio = "sample-file-3.wav";
     std::string second_audio_name = second_audio.substr(0, second_audio.find("."));
 
     wavFile second_audio_file = load_file(second_audio);
@@ -74,13 +71,6 @@ int test_wav_class() {
     //wav_song.normalize_volume(50);
     //wav_song.trim_file(30, false);
 
-    // if (first_audio_file.is_valid_wav()) {
-    //     std::cout << "Wav checks are still correct" << '\n';
-    // }
-    // else {
-    //     std::cout << "Not a valid wav file after reversal" << '\n';
-    //     return 1;
-    // }
 
     //first_audio_file.output_song();
     second_audio_file.output_song();

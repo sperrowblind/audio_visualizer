@@ -119,35 +119,7 @@ double wavFile::get_audio_file_duration() {
 }
 
 void wavFile::updateFileSize(size_t subtractSize) {
-    size_t dataChunkOffset = 8 + fmt_data.size();  // Offset introduced by "fmt" chunk
-
-    // Update the "RIFF" chunk size
     *reinterpret_cast<uint32_t*>(&header[4]) -= static_cast<uint32_t>(subtractSize);
-
-    // Update the "data" chunk size
-    *reinterpret_cast<uint32_t*>(&header[dataChunkOffset]) -= static_cast<uint32_t>(subtractSize);
-    std::cout << "Subtract Size: " << subtractSize << '\n';
-
-    size_t newFileSize = *reinterpret_cast<uint32_t*>(&header[4]);
-    std::cout << "New File Size: " << newFileSize << '\n';
-
-
-
-    // size_t currentSize = static_cast<uint8_t>(header[4]) |
-    //                 (static_cast<uint8_t>(header[5]) << 8) |
-    //                 (static_cast<uint8_t>(header[6]) << 16) |
-    //                 (static_cast<uint8_t>(header[7]) << 24);
-    // std::cout << "Current Size: " << currentSize << '\n';
-    // std::cout << "Subtract Size: " << subtractSize << '\n';
-
-    // size_t newFileSize = currentSize - subtractSize;
-
-    // std::cout << "New File Size: " << newFileSize << '\n';
-
-    // header[4] = static_cast<char>(newFileSize & 0xFF);
-    // header[5] = static_cast<char>((newFileSize >> 8) & 0xFF);
-    // header[6] = static_cast<char>((newFileSize >> 16) & 0xFF);
-    // header[7] = static_cast<char>((newFileSize >> 24) & 0xFF);
 }
 
 
@@ -175,12 +147,12 @@ bool wavFile::is_valid_wav() {
     }
 
     memcpy(&fmt_chunk, fmt_data.data(), sizeof(fmt_chunk));
-    printf("Audio Format: %d\n", fmt_chunk.audioFormat);
-    printf("Number of Channels: %d\n", fmt_chunk.numChannels);
-    printf("Sample Rate: %d\n", fmt_chunk.sampleRate);
-    printf("Byte Rate: %d\n", fmt_chunk.byteRate);
-    printf("Block Align: %d\n", fmt_chunk.blockAlign);
-    printf("Bits per Sample: %d\n", fmt_chunk.bitsPerSample);
+    // printf("Audio Format: %d\n", fmt_chunk.audioFormat);
+    // printf("Number of Channels: %d\n", fmt_chunk.numChannels);
+    // printf("Sample Rate: %d\n", fmt_chunk.sampleRate);
+    // printf("Byte Rate: %d\n", fmt_chunk.byteRate);
+    // printf("Block Align: %d\n", fmt_chunk.blockAlign);
+    // printf("Bits per Sample: %d\n", fmt_chunk.bitsPerSample);
 
     return true;
 }
@@ -247,35 +219,33 @@ void wavFile::normalize_volume(double target_peak) {
 
 
 void wavFile::make_8bit() {
-    if (fmt_chunk.byteRate == 8) {
+    if (fmt_chunk.bitsPerSample == 8) {
         std::cerr << "It appears the file is already 8-bit" << '\n';
         std::cout << "It appears the file is already 8-bit" << '\n';
         return;
     }
-    //apply_dither();
-    int bytesPerSample = (fmt_chunk.numChannels * fmt_chunk.bitsPerSample) / 8;
-    int totalSamples = (audio_data.size() - 8) / bytesPerSample;
-    printf("bytes per sample: %d\n", bytesPerSample);
-    for (size_t i = 8; i < audio_data.size(); i += bytesPerSample) {
-        short sample = static_cast<short>((audio_data[i + 1] << 8) | (audio_data[i] & 0xFF));
+    size_t numSamples = (audio_data.size()-8) / (fmt_chunk.bitsPerSample / 8);
+    for (size_t i = 8; i < numSamples; ++i) {
+        short sample = *(reinterpret_cast<short*>(&audio_data[i * (fmt_chunk.bitsPerSample / 8)]));
+        int sample8bit = static_cast<int8_t>(sample >> (fmt_chunk.bitsPerSample - 8));
+        sample8bit = std::min(std::max(sample8bit, -128), 127);
 
-        char scaledSample = static_cast<char>((sample / 32768.0) * 127.0) + 128;
-
-        audio_data[i / (fmt_chunk.bitsPerSample / 8)] = scaledSample;
+        audio_data[i * (fmt_chunk.bitsPerSample / 8)] = static_cast<char>(sample8bit);
     }
+
     fmt_chunk.bitsPerSample = 8;
     fmt_chunk.blockAlign = fmt_chunk.numChannels * fmt_chunk.bitsPerSample / 8;
     fmt_data[22] = 8;
     fmt_data[20] = fmt_chunk.blockAlign;
 
-    int audio_size = totalSamples * fmt_chunk.numChannels * fmt_chunk.bitsPerSample / 8;
-    printf("what the size should be: %d\n", audio_size);
+    int audio_size = numSamples * fmt_chunk.bitsPerSample / 8;
 
-    audio_data.resize(audio_size + 8);
+    audio_data.resize(audio_size * 2);
 
-    updateFileSize(audio_size);
+    updateFileSize(audio_size * 2);
 
-    //normalize_volume(50);
+    normalize_volume(50);
+
 }
 
 

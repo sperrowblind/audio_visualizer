@@ -8,16 +8,18 @@ and possibly flac audio files.
 
 Current functionality:
 Play song entered into application,
-Reverse and output song
+Reverse song,
+Trim leading or trailing seconds from song,
+Make song 8-bit (partial functionality),
+Normalize volume,
+Apply dither,
+Output song
 
 Future functionality:
 Clean up project,
-Trim leading and trailing custom seconds from file -- basic implementation, need to go back because math not perfect
 mp3 support
 flac support
-Change bitrate - basically done with 8-bit
 slow or speed up file
-make 8-bit -- basic implementation, need to go back because not perfect
 Basic remove lyrics
 visualize data in waveform
 possibly stream waveform audio visualizer when song plays
