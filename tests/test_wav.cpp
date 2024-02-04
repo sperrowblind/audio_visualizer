@@ -1,5 +1,4 @@
 #include "../models/wav.hpp"
-//#include "../models/flac.cpp"
 
 using namespace std;
 
@@ -37,22 +36,22 @@ int test_trim_file(wavFile &wavFile_in, int second_to_trim_in, bool is_leading_i
 
 int test_wav_class() {
 
-    // std::string first_audio = "HOME_wav.wav";
-    // std::string first_audio_name = first_audio.substr(0, first_audio.find("."));
+    std::string first_audio = "HOME_wav.wav";
+    std::string first_audio_name = first_audio.substr(0, first_audio.find("."));
 
-    // wavFile first_audio_file = load_file(first_audio);
+    wavFile first_audio_file = load_file(first_audio);
 
-    // int testTrimSeconds[5] = {1, 10, 12, 20, 2};
+    int testTrimSeconds[5] = {1, 10, 12, 20, 2};
 
-    // for (auto i : testTrimSeconds) {
-    //     if (test_trim_file(first_audio_file, i, true) == 1) {
-    //         return 1;
-    //     }
-    // }
+    for (auto i : testTrimSeconds) {
+        if (test_trim_file(first_audio_file, i, true) == 1) {
+            return 1;
+        }
+    }
 
     std::cout << "Passed trimming file" << '\n';
 
-    std::string second_audio = "sample-file-3.wav";
+    std::string second_audio = "HOME_wav.wav";
     std::string second_audio_name = second_audio.substr(0, second_audio.find("."));
 
     wavFile second_audio_file = load_file(second_audio);

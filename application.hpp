@@ -30,8 +30,10 @@ class audioApplication {
         sf::Text inputText;
         sf::Text loadButtonText;
         sf::RectangleShape textBox;
+        sf::RectangleShape mainTextBox;
+        sf::RectangleShape bottomTextBox;
         sf::RectangleShape cursor;
-        sf::RectangleShape loadButton;
+        sf::Sprite loadButton;
         sf::Clock cursorClock;
         sf::Music music;
         std::string filePath;
@@ -41,6 +43,7 @@ class audioApplication {
         // After file loaded screen
         sf::Text backButtonText;
         sf::Text songTitleText;
+        sf::RectangleShape songTitleBox;
         sf::Text reverseButtonText;
         sf::Text make8BitButtonText;
         sf::Text trimButtonText;
@@ -56,6 +59,19 @@ class audioApplication {
         sf::Sprite normalizeAudioButton;
         sf::Text outputButtonText;
         sf::Sprite outputButton;
+
+        sf::Texture pauseButtonTexture;
+        sf::Texture playButtonTexture;
+        sf::Sprite pausePlayButton;
+        bool isPaused;
+        sf::RectangleShape durationBar;
+        sf::RectangleShape durationActualBar;
+        sf::SoundBuffer audioBuffer;
+        sf::Sound audio;
+        sf::Text audioTotalDuration;
+        sf::Text audioCurrentDuration;
+
+        void loadTexture(sf::Texture &texture_in, string path_in, string texture_name_in);
 
         void loadFile(const std::string& filePath);
 

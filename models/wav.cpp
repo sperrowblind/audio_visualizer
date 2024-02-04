@@ -87,9 +87,6 @@ wavFile::wavFile(ifstream& input_song, std::string song_name_in) {
     }
     song_size = static_cast<uint32_t>(input_song.tellg()) - 8 - to_subtract;
 
-    //cout << "look at this \n";
-    //cout << to_subtract;
-
     updateFileSize(to_subtract);
 
     memcpy(&fmt_chunk, fmt_data.data(), sizeof(fmt_chunk));
