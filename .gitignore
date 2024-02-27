@@ -8,3 +8,6 @@ audio_visualizer.dSYM/
 
 audio_visualizer
 test_wav
+
+*.wav
+
