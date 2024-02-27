@@ -1,4 +1,6 @@
 #include "models/wav.hpp"
+#include "services/custom_recorder_service.hpp"
+#include <algorithm>
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 
@@ -35,7 +37,6 @@ class audioApplication {
         sf::RectangleShape cursor;
         sf::Sprite loadButton;
         sf::Clock cursorClock;
-        sf::Music music;
         std::string filePath;
         bool fileLoaded;
         bool cursorVisible;
@@ -47,15 +48,15 @@ class audioApplication {
         sf::Text reverseButtonText;
         sf::Text make8BitButtonText;
         sf::Text trimButtonText;
-        sf::Text leadingButtonText;
-        sf::Text trailingButtonText;
+        //sf::Text leadingButtonText;
+        //sf::Text trailingButtonText;
         sf::Text normalizeAudioButtonText;
         sf::Sprite backButton;
         sf::Sprite reverseButton;
         sf::Sprite make8BitButton;
         sf::Sprite trimButton;
-        sf::Sprite leadingButton;
-        sf::Sprite trailingButton;
+        //sf::Sprite leadingButton;
+        //sf::Sprite trailingButton;
         sf::Sprite normalizeAudioButton;
         sf::Text outputButtonText;
         sf::Sprite outputButton;
@@ -65,13 +66,23 @@ class audioApplication {
         sf::Sprite pausePlayButton;
         bool isPaused;
         sf::RectangleShape durationBar;
-        sf::RectangleShape durationActualBar;
+        sf::Sprite durationActualShape;
         sf::SoundBuffer audioBuffer;
         sf::Sound audio;
         sf::Text audioTotalDuration;
+        sf::RectangleShape audioTotalDurationBox;
         sf::Text audioCurrentDuration;
+        sf::RectangleShape audioCurrentDurationBox;
+        sf::VertexArray sineWave;
 
         void loadTexture(sf::Texture &texture_in, string path_in, string texture_name_in);
+        void setText(sf::Text &text_in, int character_size_in, sf::Color color_in, string text_string_in, int x_pos_in, int y_pos_in);
+        void setRectangle(sf::RectangleShape &rectangle_in, int width_in, int height_in, sf::Color fill_in, sf::Color outline_in, int outline_thickness_in, int x_in, int y_in);
+        void setSprite(sf::Sprite &sprite_in, sf::Texture &texture_in, float width_in, float height_in, int x_in, int y_in);
+        void setInitialConfiguration();
+        void setEnteringPathConfiguration();
+        void setLoadedConfiguration();
+        void updateSineWave(sf::Time currentTime);
 
         void loadFile(const std::string& filePath);
 

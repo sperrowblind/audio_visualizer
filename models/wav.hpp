@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cmath>
 #include <random>
+#include <SFML/Audio.hpp>
 #include "wav_fmt.cpp"
 
 using namespace std;

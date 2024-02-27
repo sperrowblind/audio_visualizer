@@ -1,217 +1,24 @@
 #include "application.hpp"
+#include <algorithm>
 
-audioApplication::audioApplication() : window(sf::VideoMode(800, 600), "Audio Editor"), currentState(ScreenState::Loaded) {
+audioApplication::audioApplication() : window(sf::VideoMode(800, 600), "Audio Editor"), currentState(ScreenState::EnteringPath) {
 
-    if (!backgroundTexture.loadFromFile("application_images/pexels-hermaion-104084.jpg")) {
-        std::cerr << "Failed to load background image!" << std::endl;
-    }
-    else {
-        backgroundSprite.setTexture(backgroundTexture);
-        backgroundSprite.setScale(window.getSize().x
-            / backgroundSprite.getLocalBounds().width, window.getSize().y
-            / backgroundSprite.getLocalBounds().height);
-    }
-
-    if (!musicNoteOneTexture.loadFromFile("application_images/music-note-1.png")) {
-        std::cerr << "Failed to load music-note-1!" << std::endl;
-    }
-    if (!musicNoteTwoTexture.loadFromFile("application_images/music-note-2.png")) {
-        std::cerr << "Failed to load music-note-2!" << std::endl;
-    }
-    if (!pauseButtonTexture.loadFromFile("application_images/pause.png")) {
-        std::cerr << "Failed to load pause button!" << std::endl;
-    }
-    if (!playButtonTexture.loadFromFile("application_images/play.png")) {
-        std::cerr << "Failed to load play button!" << std::endl;
-    }
-
-    if (!font.loadFromFile("arial.ttf")) {
-        std::cerr << "Failed to load font!" << std::endl;
-        return;
-    }
+    setInitialConfiguration();
 
     // Initial screen for choosing audio file elements
 
-    mainText.setFont(font);
-    mainText.setCharacterSize(20);
-    mainText.setFillColor(sf::Color::White);
-    mainText.setString("Enter the path to your desired audio file: ");
-    mainText.setPosition(10, 53);
-    mainTextBox.setSize(sf::Vector2f(375, 30));
-    mainTextBox.setFillColor(sf::Color::Black);
-    mainTextBox.setOutlineColor(sf::Color::White);
-    mainTextBox.setOutlineThickness(2);
-    mainTextBox.setPosition(5, 50);
-
-    bottomText.setFont(font);
-    bottomText.setCharacterSize(20);
-    bottomText.setFillColor(sf::Color::White);
-    bottomText.setString("Please only use wav files, other audio formats are not yet supported.");
-    bottomText.setPosition(50, 153);
-    bottomTextBox.setSize(sf::Vector2f(630, 30));
-    bottomTextBox.setFillColor(sf::Color::Black);
-    bottomTextBox.setOutlineColor(sf::Color::White);
-    bottomTextBox.setOutlineThickness(2);
-    bottomTextBox.setPosition(45, 150);
-
-    textBox.setSize(sf::Vector2f(300, 30));
-    textBox.setFillColor(sf::Color::White);
-    textBox.setOutlineColor(sf::Color::Black);
-    textBox.setOutlineThickness(2);
-    textBox.setPosition(400, 50);
-
-    cursor.setSize(sf::Vector2f(2.f, 25.f));
-    cursor.setFillColor(sf::Color::Black);
-    cursor.setPosition(408.f, 53.f);
-
-    cursorVisible = true;
-    cursorBlinkDuration = 0.5f;
-
-    inputText.setFont(font);
-    inputText.setCharacterSize(20);
-    inputText.setFillColor(sf::Color::Black);
-    inputText.setPosition(405, 53);
-
-    loadButton.setTexture(musicNoteTwoTexture);
-    loadButton.setScale(1.2f, 1.2f);
-    loadButton.setPosition(320, 200);
-    loadButtonText.setFont(font);
-    loadButtonText.setCharacterSize(18);
-    loadButtonText.setFillColor(sf::Color::White);
-    loadButtonText.setString("Load");
-    loadButtonText.rotate(-25);
-    loadButtonText.setPosition(326, 295);
-
-    fileLoaded = false;
+    setEnteringPathConfiguration();
 
     // After file loaded screen
 
-    songTitleText.setFont(font);
-    songTitleText.setCharacterSize(20);
-    songTitleText.setFillColor(sf::Color::White);
-    songTitleText.setString("Default Title");
-    songTitleText.setPosition(350, 15);
-    songTitleBox.setFillColor(sf::Color::Black);
-    songTitleBox.setOutlineColor(sf::Color::White);
-    songTitleBox.setOutlineThickness(2);
-    songTitleBox.setPosition(350, 15);
+    setLoadedConfiguration();
 
-    backButtonText.setFont(font);
-    backButtonText.setCharacterSize(18);
-    backButtonText.setFillColor(sf::Color::White);
-    backButtonText.setString("Back");
-    backButtonText.rotate(-25);
-    backButtonText.setPosition(56, 105);
-
-    backButton.setTexture(musicNoteOneTexture);
-    backButton.setScale(1.2f, 1.2f);
-    backButton.setPosition(50, 10);
-
-    pausePlayButton.setTexture(pauseButtonTexture);
-    pausePlayButton.setPosition(150, 150);
-    isPaused = true;
-    durationBar.setSize(sf::Vector2f(375, 30));
-    durationBar.setFillColor(sf::Color::Black);
-    durationBar.setOutlineColor(sf::Color::White);
-    durationBar.setOutlineThickness(2);
-    durationBar.setPosition(215, 170);
-
-    audioTotalDuration.setFont(font);
-    audioTotalDuration.setCharacterSize(15);
-    audioTotalDuration.setFillColor(sf::Color::Red);
-    audioTotalDuration.setString("0:00");
-    audioTotalDuration.setPosition(400, 170);
-
-    audioCurrentDuration.setFont(font);
-    audioCurrentDuration.setCharacterSize(15);
-    audioCurrentDuration.setFillColor(sf::Color::Red);
-    audioCurrentDuration.setString("0:00");
-    audioCurrentDuration.setPosition(215, 170);
-
-
-
-    reverseButtonText.setFont(font);
-    reverseButtonText.setCharacterSize(18);
-    reverseButtonText.setFillColor(sf::Color::White);
-    reverseButtonText.setString("Reverse");
-    reverseButtonText.rotate(-25);
-    reverseButtonText.setPosition(50, 425);
-
-    reverseButton.setTexture(musicNoteTwoTexture);
-    reverseButton.setScale(1.5f, 1.5f);
-    reverseButton.setPosition(50, 300);
-
-    make8BitButtonText.setFont(font);
-    make8BitButtonText.setCharacterSize(18);
-    make8BitButtonText.setFillColor(sf::Color::White);
-    make8BitButtonText.setString("8-bit'ify");
-    make8BitButtonText.rotate(-25);
-    make8BitButtonText.setPosition(200, 425);
-
-    make8BitButton.setTexture(musicNoteOneTexture);
-    make8BitButton.setScale(1.5f, 1.5f);
-    make8BitButton.setPosition(200, 300);
-
-    trimButtonText.setFont(font);
-    trimButtonText.setCharacterSize(18);
-    trimButtonText.setFillColor(sf::Color::White);
-    trimButtonText.setString("Trim");
-    trimButtonText.rotate(-25);
-    trimButtonText.setPosition(305, 415);
-
-    trimButton.setTexture(musicNoteTwoTexture);
-    trimButton.setScale(1.5f, 1.5f);
-    trimButton.setPosition(300, 300);
-
-    leadingButtonText.setFont(font);
-    leadingButtonText.setCharacterSize(18);
-    leadingButtonText.setFillColor(sf::Color::White);
-    leadingButtonText.setString("Leading");
-    leadingButtonText.rotate(-25);
-    leadingButtonText.setPosition(400, 425);
-
-    leadingButton.setTexture(musicNoteOneTexture);
-    leadingButton.setScale(1.5f, 1.5f);
-    leadingButton.setPosition(400, 300);
-
-    trailingButtonText.setFont(font);
-    trailingButtonText.setCharacterSize(18);
-    trailingButtonText.setFillColor(sf::Color::White);
-    trailingButtonText.setString("Trailing");
-    trailingButtonText.rotate(-25);
-    trailingButtonText.setPosition(500, 425);
-
-    trailingButton.setTexture(musicNoteTwoTexture);
-    trailingButton.setScale(1.5f, 1.5f);
-    trailingButton.setPosition(500, 300);
-
-    normalizeAudioButtonText.setFont(font);
-    normalizeAudioButtonText.setCharacterSize(18);
-    normalizeAudioButtonText.setFillColor(sf::Color::White);
-    normalizeAudioButtonText.setString("Quiet");
-    normalizeAudioButtonText.rotate(-25);
-    normalizeAudioButtonText.setPosition(652, 423);
-
-    normalizeAudioButton.setTexture(musicNoteOneTexture);
-    normalizeAudioButton.setScale(1.5, 1.5f);
-    normalizeAudioButton.setPosition(650, 300);
-
-    outputButtonText.setFont(font);
-    outputButtonText.setCharacterSize(18);
-    outputButtonText.setFillColor(sf::Color::White);
-    outputButtonText.setString("Output");
-    outputButtonText.rotate(-25);
-    outputButtonText.setPosition(375, 475);
-
-    outputButton.setTexture(musicNoteTwoTexture);
-    outputButton.rotate(180);
-    outputButton.setScale(1.5f, 1.5f);
-    outputButton.setPosition(405, 600);
 }
 
 void audioApplication::run() {
     sf::Event event;
-    while (window.isOpen()){
+
+    while (window.isOpen()) {
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 window.close();
@@ -226,9 +33,14 @@ void audioApplication::run() {
             }
         }
 
+        if (audio.getStatus() == sf::Sound::Playing) {
+            sf::Time currentTime = audio.getPlayingOffset();
+            updateSineWave(currentTime);
+        }
+
+
         inputText.setString(filePath);
         float textWidth = inputText.getGlobalBounds().width;
-
         cursor.setPosition(408.f + textWidth, 53.f);
 
         renderElements();
@@ -242,13 +54,165 @@ void audioApplication::loadTexture(sf::Texture &texture_in, string path_in, stri
     }
 }
 
+void audioApplication::setText(sf::Text &text_in, int character_size_in, sf::Color color_in, string text_string_in, int x_pos_in, int y_pos_in) {
+    text_in.setFont(font);
+    text_in.setCharacterSize(character_size_in);
+    text_in.setFillColor(color_in);
+    text_in.setString(text_string_in);
+    text_in.setPosition(x_pos_in, y_pos_in);
+}
+
+void audioApplication::setRectangle(sf::RectangleShape &rectangle_in, int width_in, int height_in, sf::Color fill_in, sf::Color outline_in, int outline_thickness_in, int x_in, int y_in) {
+    rectangle_in.setSize(sf::Vector2f(width_in, height_in));
+    rectangle_in.setFillColor(fill_in);
+    rectangle_in.setOutlineColor(outline_in);
+    rectangle_in.setOutlineThickness(outline_thickness_in);
+    rectangle_in.setPosition(x_in, y_in);
+}
+
+void audioApplication::setSprite(sf::Sprite &sprite_in, sf::Texture &texture_in, float width_in, float height_in, int x_in, int y_in) {
+    sprite_in.setTexture(texture_in);
+    sprite_in.setScale(width_in, height_in);
+    sprite_in.setPosition(x_in, y_in);
+}
+
+void audioApplication::setInitialConfiguration() {
+    loadTexture(backgroundTexture, "application_images/pexels-hermaion-104084.jpg", "background texture");
+
+    backgroundSprite.setTexture(backgroundTexture);
+    backgroundSprite.setScale(window.getSize().x
+        / backgroundSprite.getLocalBounds().width, window.getSize().y
+        / backgroundSprite.getLocalBounds().height);
+
+    loadTexture(musicNoteOneTexture, "application_images/music-note-1.png", "music-note-1");
+    loadTexture(musicNoteTwoTexture, "application_images/music-note-2.png", "music-note-2");
+    loadTexture(pauseButtonTexture, "application_images/pause.png", "pause");
+    loadTexture(playButtonTexture, "application_images/play.png", "play");
+
+
+    if (!font.loadFromFile("arial.ttf")) {
+        std::cerr << "Failed to load font!" << std::endl;
+        return;
+    }
+}
+
+void audioApplication::setEnteringPathConfiguration() {
+    setText(mainText, 20, sf::Color::White, "Enter the path to your desired audio file: ", 10, 53);
+
+    setRectangle(mainTextBox, 375, 30, sf::Color::Black, sf::Color::White, 2, 5, 50);
+
+    setText(bottomText, 20, sf::Color::White, "Please only use wav files, other audio formats are not yet supported.", 50, 153);
+
+    setRectangle(bottomTextBox, 630, 30, sf::Color::Black, sf::Color::White, 2, 45, 150);
+
+    setRectangle(textBox, 300, 30, sf::Color::White, sf::Color::Black, 2, 400, 50);
+
+    cursor.setSize(sf::Vector2f(2.f, 25.f));
+    cursor.setFillColor(sf::Color::Black);
+    cursor.setPosition(408.f, 53.f);
+
+    cursorVisible = true;
+    cursorBlinkDuration = 0.5f;
+
+    inputText.setFont(font);
+    inputText.setCharacterSize(20);
+    inputText.setFillColor(sf::Color::Black);
+    inputText.setPosition(405, 53);
+
+    setSprite(loadButton, musicNoteTwoTexture, 1.2f, 1.2f, 320, 200);
+
+    setText(loadButtonText, 18, sf::Color::White, "Load", 326, 295);
+    loadButtonText.rotate(-25);
+
+    fileLoaded = false;
+}
+
+void audioApplication::setLoadedConfiguration() {
+    setText(songTitleText, 20, sf::Color::White, "Default Title", 350, 15);
+    songTitleBox.setFillColor(sf::Color::Black);
+    songTitleBox.setOutlineColor(sf::Color::White);
+    songTitleBox.setOutlineThickness(2);
+    songTitleBox.setPosition(350, 15);
+
+    setText(backButtonText, 18, sf::Color::White, "Back", 56, 105);
+    backButtonText.rotate(-25);
+
+    setSprite(backButton, musicNoteOneTexture, 1.2f, 1.2f, 50, 10);
+
+    setSprite(pausePlayButton, pauseButtonTexture, 1.0f, 1.0f, 150, 150);
+
+    isPaused = true;
+
+    setRectangle(durationBar, 375, 30, sf::Color::Blue, sf::Color::Black, 2, 215, 160);
+    setSprite(durationActualShape, musicNoteTwoTexture, 1.0f, 1.0f, 215, 160);
+    sineWave.setPrimitiveType(sf::LineStrip);
+    sineWave.resize(1000);
+    for (std::size_t i = 0; i < sineWave.getVertexCount(); ++i) {
+        sineWave[i].color = sf::Color::Red;
+    }
+
+    setText(audioTotalDuration, 15, sf::Color::Red, "0:00", 500, 195);
+    setRectangle(audioTotalDurationBox, 60, 20, sf::Color::Black, sf::Color::White, 2, 490, 195);
+    setText(audioCurrentDuration, 15, sf::Color::Red, "0:00", 245, 195);
+    setRectangle(audioCurrentDurationBox, 60, 20, sf::Color::Black, sf::Color::White, 2, 235, 195);
+
+    setText(reverseButtonText, 18, sf::Color::White, "Reverse", 100, 425);
+    reverseButtonText.rotate(-25);
+
+    setSprite(reverseButton, musicNoteTwoTexture, 1.5f, 1.5f, 100, 300);
+
+    setText(make8BitButtonText, 18, sf::Color::White, "8-bit'ify", 205, 425);
+    make8BitButtonText.rotate(-25);
+
+    setSprite(make8BitButton, musicNoteOneTexture, 1.5f, 1.5f, 200, 300);
+
+    setText(trimButtonText, 18, sf::Color::White, "Trim", 412, 420);
+    trimButtonText.rotate(-25);
+
+    setSprite(trimButton, musicNoteTwoTexture, 1.5f, 1.5f, 400, 300);
+
+    setText(normalizeAudioButtonText, 18, sf::Color::White, "Quiet", 562, 420);
+    normalizeAudioButtonText.rotate(-25);
+
+    setSprite(normalizeAudioButton, musicNoteOneTexture, 1.5f, 1.5f, 550, 300);
+
+    setText(outputButtonText, 18, sf::Color::White, "Output", 350, 530);
+    outputButtonText.rotate(-25);
+
+    setSprite(outputButton, musicNoteTwoTexture, 1.5f, 1.5f, 415, 650);
+    outputButton.rotate(180);
+}
+
+void audioApplication::updateSineWave(sf::Time currentTime) {
+    float sineWaveAmplitude = 14.0f;
+    float sineWaveFrequency = 0.5f;
+    float sineWavePropagationSpeed = 10.0f;
+    float sineWaveWidth = 0.0f;
+
+    double sineWaveLength = (currentTime.asSeconds() / audio_file.get_audio_file_duration());
+
+    const float centerY = 175.0f;  // Adjust as needed
+    const float stepSize = 0.1f;    // Adjust as needed
+
+    // Update sine wave properties
+    sineWaveWidth += sineWavePropagationSpeed * currentTime.asSeconds();
+    sineWaveLength = sineWaveLength * durationBar.getSize().x;
+    sineWave.resize(sineWaveLength);
+
+
+    for (std::size_t i = 0; i < sineWave.getVertexCount(); ++i) {
+        float x = (i * stepSize) + sineWaveLength;
+        float y = centerY + sineWaveAmplitude * std::sin(x * sineWaveFrequency) * std::cos((x + sineWaveWidth) * sineWaveFrequency);
+        sineWave[i].position = sf::Vector2f(215 + x, y);
+        sineWave[i].color = sf::Color::Red;
+    }
+}
+
 void audioApplication::loadFile(const std::string& filePath) {
     std::ifstream file(filePath);
     if (file.is_open()) {
         fileLoaded = true;
         std::cout << "File opened successfully!" << std::endl;
-        if (!music.openFromFile(filePath))
-            std::cerr << "Couldn't play file \n";
         currentState = ScreenState::Loaded;
         std::string file_name = filePath.substr(0, filePath.find("."));
         wavFile file_in(file, file_name);
@@ -291,8 +255,8 @@ void audioApplication::renderElements() {
             window.draw(reverseButton);
             window.draw(make8BitButton);
             window.draw(trimButton);
-            window.draw(leadingButton);
-            window.draw(trailingButton);
+            //window.draw(leadingButton);
+            //window.draw(trailingButton);
             window.draw(normalizeAudioButton);
             window.draw(outputButton);
             window.draw(songTitleBox);
@@ -302,13 +266,16 @@ void audioApplication::renderElements() {
             window.draw(reverseButtonText);
             window.draw(make8BitButtonText);
             window.draw(trimButtonText);
-            window.draw(leadingButtonText);
-            window.draw(trailingButtonText);
+            //window.draw(leadingButtonText);
+            //window.draw(trailingButtonText);
             window.draw(normalizeAudioButtonText);
             window.draw(outputButtonText);
             window.draw(pausePlayButton);
+            window.draw(audioTotalDurationBox);
+            window.draw(audioCurrentDurationBox);
             window.draw(audioCurrentDuration);
             window.draw(audioTotalDuration);
+            window.draw(sineWave);
             break;
     }
     window.display();

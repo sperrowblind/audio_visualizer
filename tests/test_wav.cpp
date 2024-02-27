@@ -36,7 +36,7 @@ int test_trim_file(wavFile &wavFile_in, int second_to_trim_in, bool is_leading_i
 
 int test_wav_class() {
 
-    std::string first_audio = "HOME_wav.wav";
+    std::string first_audio = "sample-file-3.wav";
     std::string first_audio_name = first_audio.substr(0, first_audio.find("."));
 
     wavFile first_audio_file = load_file(first_audio);
@@ -79,23 +79,10 @@ int test_wav_class() {
 }
 
 
-// int test_flac_class() {
-
-//     string song_name = get_song_name();
-
-//     ifstream song_in(song_name, ios::binary);
-
-//     song_name = song_name.substr(0, song_name.find("."));
-
-//     flacFile(song_in, song_name);
-
-//     return 0;
-// }
-
-
 int main() {
 
     assert(test_wav_class() == 0);
 
     return 0;
 }
+

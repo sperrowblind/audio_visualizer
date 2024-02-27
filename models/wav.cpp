@@ -29,7 +29,6 @@ wavFile::wavFile(ifstream& input_song, std::string song_name_in) {
     while (input_song.read(chunk.data(), chunk.size())) {
 
         if (strncmp(chunk.data(), "RIFF", 4) == 0) {
-            //cout << "found riff \n";
             header.insert(header.end(), chunk.begin(), chunk.end());
             input_song.read(chunk.data(), chunk.size());
             header.insert(header.end(), chunk.begin(), chunk.end());
@@ -38,7 +37,6 @@ wavFile::wavFile(ifstream& input_song, std::string song_name_in) {
             continue;
         }
         else if (strncmp(chunk.data(), "data", 4) == 0) {
-            //cout << "Found data \n";
             audio_data.insert(audio_data.end(), chunk.begin(), chunk.end());
             input_song.read(chunk.data(), chunk.size());
             audio_data.insert(audio_data.end(), chunk.begin(), chunk.end());
@@ -55,7 +53,6 @@ wavFile::wavFile(ifstream& input_song, std::string song_name_in) {
             break;
         }
         else if (strncmp(chunk.data(), "fmt", 3) == 0) {
-            //cout << "found fmt data \n";
             fmt_data.insert(fmt_data.end(), chunk.begin(), chunk.end());
             input_song.read(chunk.data(), chunk.size());
             fmt_data.insert(fmt_data.end(), chunk.begin(), chunk.end());
@@ -252,11 +249,8 @@ void wavFile::output_song() {
 
     if (song_out.is_open()) {
         song_out.write(header.data(), header.size());
-        //printf("Header size: %d\n", header.size());
         song_out.write(fmt_data.data(), fmt_data.size());
-        //printf("Fmt size: %d\n", fmt_data.size());
         song_out.write(audio_data.data(), audio_data.size());
-        //printf("Audio_data size: %d\n", audio_data.size());
         song_out.close();
     }
     else {
