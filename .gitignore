@@ -1,5 +1,5 @@
 venv/
-
+test_wav.dSYM/
 .vscode/
 
 audio_visualizer.dSYM/
@@ -7,3 +7,4 @@ audio_visualizer.dSYM/
 .env
 
 audio_visualizer
+test_wav
